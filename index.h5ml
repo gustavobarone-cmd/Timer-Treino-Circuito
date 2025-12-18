@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Timer Circuito — Minha Voz (RAJIME / KOTAI / MATE)</title>
+  <style>
+    :root{--bg:#0b0f1a;--fg:#e9eefc;--mut:#a9b5d6;--ok:#4cd7a5;--warn:#ffd166;--bad:#ff6b6b;--card:rgba(255,255,255,.04);}
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:radial-gradient(900px 700px at 10% 0%,#162246 0%,var(--bg) 55%,#070a12 100%);color:var(--fg);}
+    .wrap{max-width:980px;margin:0 auto;padding:14px 14px 26px;}
+    h1{margin:0;font-size:18px;line-height:1.2} .sub{margin:6px 0 0;color:var(--mut);font-size:13px;line-height:1.35}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px} @media(min-width:920px){.grid{grid-template-columns:1.1fr .9fr}}
+    .card{background:linear-gradient(180deg,var(--card),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.20);color:var(--mut);font-size:12px}
+    .dot{width:10px;height:10px;border-radius:50%} .dot.off{background:var(--bad)} .dot.on{background:var(--ok)} .dot.rest{background:var(--warn)}
+    .top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+    .big{font-variant-numeric:tabular-nums;font-size:68px;font-weight:900;letter-spacing:1px;text-align:center;margin:8px 0}
+    .name{font-size:22px;font-weight:900;text-align:center;margin:0}
+    .lbl{color:var(--mut);text-align:center;margin:0 0 10px}
+    .barwrap{height:12px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10)}
+    .bar{height:100%;width:0%;background:linear-gradient(90deg,#7aa2ff,#9cf1ff);transition:width .25s linear}
+    button{width:100%;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.18);color:var(--fg);border-radius:14px;padding:12px;font-weight:900;font-size:16px;touch-action:manipulation}
+    button:active{transform:translateY(1px)} .primary{background:linear-gradient(180deg,rgba(122,162,255,.95),rgba(122,162,255,.65));color:#071026}
+    .ok{background:linear-gradient(180deg,rgba(76,215,165,.95),rgba(76,215,165,.65));color:#06120d}
+    .warn{background:linear-gradient(180deg,rgba(255,209,102,.95),rgba(255,209,102,.65));color:#1b1200}
+    .bad{background:linear-gradient(180deg,rgba(255,107,107,.95),rgba(255,107,107,.65));color:#1b0000}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .row1{margin-top:10px}
+    label{display:block;color:var(--mut);font-size:13px;margin-top:10px}
+    input,select,textarea{width:100%;margin-top:6px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px;color:var(--fg);font-size:14px;outline:none}
+    textarea{min-height:110px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:13px;line-height:1.3}
+    .mini{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .mini button{width:auto;font-size:14px;padding:10px;border-radius:12px}
+    .hint{color:var(--mut);font-size:12px;line-height:1.35;margin-top:8px}
+    .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.14);padding:10px 12px;border-radius:999px;color:var(--fg);font-size:13px;opacity:0;pointer-events:none;transition:opacity .25s;max-width:92vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:9999}
+    .toast.show{opacity:1}
+    .back{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;align-items:center;justify-content:center;padding:16px;z-index:9999}
+    .back.show{display:flex}
+    .modal{width:min(860px,96vw);max-height:88vh;overflow:auto;background:rgba(10,14,25,.96);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:14px;box-shadow:0 20px 60px rgba(0,0,0,.55)}
+    .modal h3{margin:6px 0 10px}
+    .modal p,.modal li{color:var(--mut);line-height:1.45}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Timer de Circuito — Só minha voz (RAJIME / KOTAI / MATE)</h1>
+  <div class="sub">Sem TTS. O app só toca os áudios que você gravar. (Para gravar, precisa estar em <b>HTTPS</b> — GitHub Pages resolve.)</div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="top">
+        <div class="pill"><span class="dot off" id="dotPhase"></span><span id="phase">Parado</span></div>
+        <div class="pill"><span class="dot off" id="dotAudio"></span><span id="audioState">Áudio: desativado</span></div>
+        <div class="pill">Exercício <b id="idx">0/0</b> • Volta <b id="round">1</b></div>
+      </div>
+
+      <p class="name" id="exName">Pronto</p>
+      <div class="big" id="time">00:30</div>
+      <p class="lbl" id="lbl">Grave os comandos e aperte Iniciar</p>
+      <div class="barwrap"><div class="bar" id="bar"></div></div>
+
+      <div class="row2">
+        <button class="primary" id="btnStart">Iniciar</button>
+        <button id="btnPause">Pausar</button>
+      </div>
+      <div class="row2">
+        <button id="btnReset">Zerar</button>
+        <button class="bad" id="btnRest30">Descanso 30s</button>
+      </div>
+      <div class="row2">
+        <button class="warn" id="btnNext">Próximo</button>
+        <button id="btnFull">Tela cheia</button>
+      </div>
+      <div class="row1">
+        <button class="ok" id="btnAudio">Ativar áudio</button>
+      </div>
+      <div class="row1">
+        <button class="ok" id="btnMic">Configurar microfone</button>
+      </div>
+      <div class="row1">
+        <button id="btnGuide">Guia do usuário</button>
+      </div>
+
+      <div class="hint">Fluxo recomendado: fim dos 30s = <b>KOTAI</b>; intervalo = <b>silencioso</b>; início = <b>RAJIME</b>.</div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 8px">Configurações</h3>
+
+      <label>Tempo de trabalho (segundos)
+        <input type="number" id="work" min="5" max="600" value="30">
+      </label>
+
+      <label>Intervalo entre exercícios (segundos)
+        <input type="number" id="rest" min="0" max="600" value="10">
+      </label>
+
+      <label>Últimos segundos do intervalo (janela da contagem)
+        <input type="number" id="cd" min="0" max="20" value="5">
+      </label>
+
+      <label>Contagem no intervalo
+        <select id="cdMode">
+          <option value="silent" selected>Silenciosa (só espera)</option>
+          <option value="clip">Minha voz (um áudio “5..1”)</option>
+          <option value="off">Desligada</option>
+        </select>
+      </label>
+
+      <label>Quantas voltas no circuito
+        <input type="number" id="rounds" min="1" max="50" value="1">
+      </label>
+
+      <label>Fim do exercício (no fim dos 30s)
+        <select id="endCmd">
+          <option value="kotai" selected>KOTAI (troca)</option>
+          <option value="mate">MATE (parar)</option>
+          <option value="none">Nenhum</option>
+        </select>
+      </label>
+
+      <label>Vibração
+        <select id="vib">
+          <option value="on" selected>Ligada</option>
+          <option value="off">Desligada</option>
+        </select>
+      </label>
+
+      <label>Tentar tela cheia ao iniciar
+        <select id="autoFs">
+          <option value="off" selected>Não</option>
+          <option value="on">Sim</option>
+        </select>
+      </label>
+
+      <label>Lista de exercícios (um por linha)
+        <textarea id="list">Polichinelos
+Agachamento
+Flexão
+Prancha</textarea>
+      </label>
+
+      <h3 style="margin:12px 0 8px">Gravações (minha voz)</h3>
+      <div class="mini">
+        <button id="recStart">🎙️ Gravar RAJIME (início do 30s)</button>
+        <button id="testStart">▶️ Testar RAJIME</button>
+
+        <button id="recKotai">🎙️ Gravar KOTAI (troca no fim do 30s)</button>
+        <button id="testKotai">▶️ Testar KOTAI</button>
+
+        <button id="recMate">🎙️ Gravar MATE (parar no fim do 30s)</button>
+        <button id="testMate">▶️ Testar MATE</button>
+
+        <button id="recCount">🎙️ Gravar “5,4,3,2,1” (opcional)</button>
+        <button id="testCount">▶️ Testar “5..1”</button>
+
+        <button class="bad" id="clear">Apagar gravações</button>
+        <button id="save">Salvar</button>
+        <button id="load">Carregar</button>
+      </div>
+
+      <div class="hint">
+        Se “Configurar microfone” der negado mesmo em HTTPS: vá em Android → Apps → Chrome → Permissões → Microfone → Permitir.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="back" id="back" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+      <h3 style="margin:0">Guia do usuário</h3>
+      <button id="close" style="width:auto;padding:10px 12px;border-radius:12px;font-size:14px">Fechar</button>
+    </div>
+    <p><b>1) Primeiro uso (em casa):</b></p>
+    <ul>
+      <li>Abra o link do GitHub Pages (HTTPS).</li>
+      <li>Toque <b>Ativar áudio</b>.</li>
+      <li>Toque <b>Configurar microfone</b> e escolha <b>Permitir</b>.</li>
+      <li>Grave: <b>RAJIME</b>, <b>KOTAI</b> e/ou <b>MATE</b>. (Opcional: grave “5..1”).</li>
+      <li>Toque <b>Salvar</b>.</li>
+    </ul>
+    <p><b>2) No treino:</b></p>
+    <ul>
+      <li><b>Iniciar</b> → toca RAJIME e começa o tempo de trabalho.</li>
+      <li>No fim dos 30s → toca KOTAI (troca) ou MATE (parar).</li>
+      <li>Intervalo → pode ficar silencioso e reinicia com RAJIME no final.</li>
+      <li><b>Descanso 30s</b> → reinicia do começo e faz descanso longo.</li>
+    </ul>
+    <p><b>Dica:</b> aumente o volume de mídia do celular e, se puder, use uma caixinha Bluetooth.</p>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const toast = (m)=>{ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toast._); toast._=setTimeout(()=>t.classList.remove('show'),1900); };
+  const fmt = (s)=>{ s=Math.max(0,Math.round(s)); const mm=String(Math.floor(s/60)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); return `${mm}:${ss}`; };
+
+  // audio beeps (helps even if recording missing)
+  let ac=null, audioOn=false;
+  const ensureAC=()=>{ if(ac) return true; try{ ac=new (window.AudioContext||window.webkitAudioContext)(); return true; }catch(e){return false;} };
+  const beep=(freq=1200,ms=80)=>{ if(!audioOn||!ac) return; const t=ac.currentTime; const o=ac.createOscillator(); const g=ac.createGain(); o.type='square'; o.frequency.value=freq;
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.9,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+ms/1000);
+    o.connect(g).connect(ac.destination); o.start(t); o.stop(t+ms/1000+0.02);
+  };
+  const vib= (p)=>{ if($('vib').value!=='on') return; if(navigator.vibrate) navigator.vibrate(p); };
+
+  // recordings
+  const K = { start:'rec_start_v3', kotai:'rec_kotai_v3', mate:'rec_mate_v3', count:'rec_count_v3' };
+  let rec={start:null,kotai:null,mate:null,count:null,aStart:null,aKotai:null,aMate:null,aCount:null};
+
+  const loadRecs=()=>{
+    rec.start=localStorage.getItem(K.start); rec.kotai=localStorage.getItem(K.kotai);
+    rec.mate=localStorage.getItem(K.mate); rec.count=localStorage.getItem(K.count);
+    rec.aStart=rec.start?new Audio(rec.start):null;
+    rec.aKotai=rec.kotai?new Audio(rec.kotai):null;
+    rec.aMate=rec.mate?new Audio(rec.mate):null;
+    rec.aCount=rec.count?new Audio(rec.count):null;
+  };
+  const stopA=()=>{ for(const a of [rec.aStart,rec.aKotai,rec.aMate,rec.aCount]){ try{ if(a){a.pause();a.currentTime=0;} }catch(e){} } };
+  const need=(w)=>{ const ok = (w==='start')?!!rec.aStart:(w==='kotai')?!!rec.aKotai:(w==='mate')?!!rec.aMate:(w==='count')?!!rec.aCount:false;
+    if(!ok) toast('Você ainda não gravou esse comando.'); return ok;
+  };
+  const play=async(w)=>{
+    if(!audioOn){ toast('Ative o áudio primeiro.'); return false; }
+    const a = (w==='start')?rec.aStart:(w==='kotai')?rec.aKotai:(w==='mate')?rec.aMate:rec.aCount;
+    if(!a) return false;
+    try{ stopA(); a.currentTime=0; await a.play(); return true; }catch(e){ toast('Não consegui tocar o áudio.'); return false; }
+  };
+
+  const blobToDataUrl=(blob)=>new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(blob); });
+
+  async function requestMicPermission(){
+    if(!navigator.mediaDevices?.getUserMedia){ toast('Microfone não suportado aqui.'); return; }
+    try{
+      const s = await navigator.mediaDevices.getUserMedia({audio:true});
+      s.getTracks().forEach(t=>t.stop());
+      toast('Microfone liberado ✅');
+    }catch(e){
+      toast('Permissão negada. Abra pelo GitHub Pages (HTTPS) e permita o microfone no Chrome.');
+    }
+  }
+
+  async function record(which){
+    if(!navigator.mediaDevices?.getUserMedia){ toast('Gravação não suportada.'); return; }
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      const chunks=[];
+      const mr = new MediaRecorder(stream,{mimeType:'audio/webm'});
+      mr.ondataavailable=(e)=>{ if(e.data?.size) chunks.push(e.data); };
+      mr.onstop=async()=>{
+        stream.getTracks().forEach(t=>t.stop());
+        const blob=new Blob(chunks,{type:'audio/webm'});
+        const url=await blobToDataUrl(blob);
+        localStorage.setItem(K[which], url);
+        loadRecs();
+        toast(`Gravação salva (${which.toUpperCase()})`);
+      };
+      mr.start();
+      toast('Gravando… toque de novo para parar');
+      const btnId = {start:'recStart',kotai:'recKotai',mate:'recMate',count:'recCount'}[which];
+      const btn=$(btnId); const old=btn.textContent; btn.textContent='⏹️ Parar gravação'; btn.classList.add('warn');
+      const stop=()=>{ btn.removeEventListener('click',stop); btn.textContent=old; btn.classList.remove('warn'); try{mr.stop()}catch(e){} };
+      btn.addEventListener('click',stop);
+      setTimeout(()=>{ if(mr.state==='recording') stop(); }, (which==='count')?4500:2500);
+    }catch(e){
+      toast('Permissão negada. Use “Configurar microfone” e permita no Chrome (HTTPS).');
+    }
+  }
+
+  // state machine
+  const PH={STOP:'stop',WORK:'work',REST:'rest',REST30:'rest30',PAUSE:'pause'};
+  let ph=PH.STOP, prev=PH.STOP, tmr=null;
+  let ex=[], i=0, r=1, rem=30, tot=30;
+  let countdownPlayed=false;
+
+  const getInt=(id,min,max,def)=>{ const n=parseInt($(id).value,10); if(Number.isNaN(n)) return def; return Math.max(min,Math.min(max,n)); };
+  const work=()=>getInt('work',5,600,30);
+  const rest=()=>getInt('rest',0,600,10);
+  const cd=()=>getInt('cd',0,20,5);
+  const rounds=()=>getInt('rounds',1,50,1);
+
+  const loadList=()=>{
+    ex = $('list').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    if(!ex.length) ex=['Exercício'];
+    $('idx').textContent = `${Math.min(i+1,ex.length)}/${ex.length}`;
+  };
+
+  const setPhaseUI=()=>{
+    const d=$('dotPhase');
+    if(ph===PH.WORK){ d.className='dot on'; $('phase').textContent='Trabalho'; }
+    else if(ph===PH.REST||ph===PH.REST30){ d.className='dot rest'; $('phase').textContent=(ph===PH.REST30)?'Descanso (30s)':'Intervalo'; }
+    else if(ph===PH.PAUSE){ d.className='dot off'; $('phase').textContent='Pausado'; }
+    else { d.className='dot off'; $('phase').textContent='Parado'; }
+  };
+
+  const ui=()=>{
+    $('time').textContent=fmt(rem);
+    $('round').textContent=String(r);
+    $('idx').textContent=`${Math.min(i+1,ex.length)}/${ex.length}`;
+    $('exName').textContent = (ph===PH.REST30)?'DESCANSO':(ex[i]||'Pronto');
+    $('lbl').textContent = (ph===PH.WORK)?'Trabalhando…':(ph===PH.REST)?'Intervalo…':(ph===PH.REST30)?'Descanso extra…':(ph===PH.PAUSE)?'Pausado':'Grave os comandos e aperte Iniciar';
+    $('bar').style.width = `${tot?Math.max(0,Math.min(100,(1-rem/tot)*100)):0}%`;
+    setPhaseUI();
+  };
+
+  const seg=(newPh,sec)=>{ ph=newPh; tot=sec; rem=sec; countdownPlayed=false; ui(); };
+
+  const startWork=()=>{ seg(PH.WORK, work()); beep(1500,60); vib([60,40,60]); if(need('start')) play('start'); };
+  const endCmd=()=>{
+    const m=$('endCmd').value;
+    beep(1400,100); vib([140,60,140]);
+    if(m==='kotai'){ if(need('kotai')) play('kotai'); }
+    else if(m==='mate'){ if(need('mate')) play('mate'); }
+  };
+  const startRest=()=>{ const s=rest(); seg(PH.REST,s); if(s===0) next(); };
+
+  const next=()=>{
+    if(i < ex.length-1) i++;
+    else { if(r<rounds()){ r++; i=0; } else { stop(true); toast('Treino finalizado'); beep(880,90); return; } }
+    ui(); startWork();
+  };
+
+  const tick=()=>{
+    if(!(ph===PH.WORK||ph===PH.REST||ph===PH.REST30)) return;
+    rem -= 1;
+
+    if((ph===PH.REST||ph===PH.REST30) && $('cdMode').value==='clip' && cd()>0){
+      if(!countdownPlayed && rem===cd()){
+        countdownPlayed=true;
+        if(need('count')) play('count');
+      }
+    }
+
+    if(rem<=0){
+      if(ph===PH.WORK){ endCmd(); startRest(); return; }
+      if(ph===PH.REST){ beep(1100,90); vib([80]); next(); return; }
+      if(ph===PH.REST30){ beep(1100,90); vib([120]); startWork(); return; }
+    }
+    ui();
+  };
+
+  const run=()=>{ clearInterval(tmr); tmr=setInterval(tick,1000); };
+  const stop=(resetClock=false)=>{ clearInterval(tmr); tmr=null; stopA(); ph=PH.STOP; prev=PH.STOP; if(resetClock){ rem=work(); tot=rem; } ui(); };
+
+  const canStart=()=>{
+    if(!audioOn) return 'Ative o áudio primeiro.';
+    if(!rec.aStart) return 'Grave RAJIME antes de iniciar.';
+    const m=$('endCmd').value;
+    if(m==='kotai' && !rec.aKotai) return 'Grave KOTAI (fim do 30s) antes de iniciar.';
+    if(m==='mate' && !rec.aMate) return 'Grave MATE (fim do 30s) antes de iniciar.';
+    if($('cdMode').value==='clip' && !rec.aCount) return 'Você escolheu contagem 5..1, então grave o áudio “5..1” (ou mude para silencioso).';
+    return null;
+  };
+
+  const pause=()=>{
+    if(ph===PH.STOP) return;
+    if(ph===PH.PAUSE){ ph=prev; ui(); run(); toast('Retomado'); return; }
+    prev=ph; ph=PH.PAUSE; clearInterval(tmr); tmr=null; ui(); toast('Pausado');
+  };
+
+  const start=async()=>{
+    loadList();
+    if(ph===PH.STOP){
+      const err=canStart();
+      if(err){ toast(err); return; }
+      i=0; r=1;
+      if($('autoFs').value==='on' && !document.fullscreenElement){
+        try{ await document.documentElement.requestFullscreen(); }catch(e){}
+      }
+      startWork(); run();
+    } else if(ph===PH.PAUSE){ pause(); }
+  };
+
+  const rest30=()=>{
+    loadList();
+    i=0; r=1;
+    seg(PH.REST30,30);
+    run();
+  };
+
+  const toggleAudio=async()=>{
+    if(audioOn){ audioOn=false; stopA(); $('dotAudio').className='dot off'; $('audioState').textContent='Áudio: desativado'; $('btnAudio').textContent='Ativar áudio'; return; }
+    if(!ensureAC()){ toast('Áudio não suportado aqui.'); return; }
+    try{ if(ac.state==='suspended') await ac.resume(); }catch(e){}
+    audioOn=true; $('dotAudio').className='dot on'; $('audioState').textContent='Áudio: ativado'; $('btnAudio').textContent='Desativar áudio';
+    beep(880,80); toast('Áudio ativado');
+  };
+
+  const save=()=>{
+    const data={work:work(),rest:rest(),cd:cd(),cdMode:$('cdMode').value,rounds:rounds(),endCmd:$('endCmd').value,vib:$('vib').value,autoFs:$('autoFs').value,list:$('list').value};
+    localStorage.setItem('timer_cfg_v1',JSON.stringify(data)); toast('Configurações salvas');
+  };
+  const load=()=>{
+    const raw=localStorage.getItem('timer_cfg_v1'); if(!raw){ toast('Nada salvo ainda'); return; }
+    try{ const d=JSON.parse(raw);
+      $('work').value=d.work??30; $('rest').value=d.rest??10; $('cd').value=d.cd??5; $('cdMode').value=d.cdMode??'silent';
+      $('rounds').value=d.rounds??1; $('endCmd').value=d.endCmd??'kotai'; $('vib').value=d.vib??'on'; $('autoFs').value=d.autoFs??'off'; $('list').value=d.list??$('list').value;
+      loadList(); rem=work(); tot=rem; ui(); toast('Configurações carregadas');
+    }catch(e){ toast('Erro ao carregar'); }
+  };
+  const clear=()=>{ for(const k of Object.values(K)) localStorage.removeItem(k); loadRecs(); toast('Gravações apagadas'); };
+
+  // guide modal
+  const openGuide=()=>{ $('back').classList.add('show'); $('back').setAttribute('aria-hidden','false'); };
+  const closeGuide=()=>{ $('back').classList.remove('show'); $('back').setAttribute('aria-hidden','true'); };
+
+  // bind
+  $('btnStart').onclick=start;
+  $('btnPause').onclick=pause;
+  $('btnReset').onclick=()=>{ loadList(); i=0; r=1; stop(true); toast('Zerado'); };
+  $('btnRest30').onclick=rest30;
+  $('btnNext').onclick=()=>{ if(ph===PH.STOP||ph===PH.PAUSE){ toast('Inicie/retome antes.'); return; } next(); };
+  $('btnFull').onclick=async()=>{ try{ if(!document.fullscreenElement) await document.documentElement.requestFullscreen(); else await document.exitFullscreen(); }catch(e){} };
+  $('btnAudio').onclick=toggleAudio;
+  $('btnMic').onclick=requestMicPermission;
+
+  $('recStart').onclick=()=>record('start');
+  $('recKotai').onclick=()=>record('kotai');
+  $('recMate').onclick=()=>record('mate');
+  $('recCount').onclick=()=>record('count');
+
+  $('testStart').onclick=()=>{ if(need('start')) play('start'); };
+  $('testKotai').onclick=()=>{ if(need('kotai')) play('kotai'); };
+  $('testMate').onclick=()=>{ if(need('mate')) play('mate'); };
+  $('testCount').onclick=()=>{ if(need('count')) play('count'); };
+
+  $('save').onclick=save; $('load').onclick=load; $('clear').onclick=clear;
+
+  $('btnGuide').onclick=openGuide;
+  $('close').onclick=closeGuide;
+  $('back').onclick=(e)=>{ if(e.target===$('back')) closeGuide(); };
+
+  ['work','rest','cd','rounds','cdMode','endCmd','vib','autoFs','list'].forEach(id => $(id).addEventListener('input',()=>{ if(ph===PH.STOP){ rem=work(); tot=rem; } loadList(); ui(); }));
+
+  // init
+  loadList(); loadRecs(); rem=work(); tot=rem; ui();
+})();
+</script>
+</body>
+</html>
