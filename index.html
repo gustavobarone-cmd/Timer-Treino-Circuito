@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Timer Circuito — Minha Voz</title>
+  <title>Timer Circuito — Minha Voz (HAJIME / KOTAI / MATE)</title>
+
   <style>
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#0b1020;color:#eef2ff}
     .wrap{max-width:920px;margin:0 auto;padding:14px}
@@ -51,18 +52,27 @@
         <button id="closeGuide" style="width:auto">Fechar</button>
       </div>
       <p class="mut">
-        1) Abra em HTTPS (GitHub Pages).<br>
-        2) Ative áudio.<br>
-        3) “Configurar microfone” → Permitir.<br>
-        4) Grave RAJIME, KOTAI e/ou MATE. (Opcional: “5..1”).<br>
-        5) Iniciar: toca RAJIME e roda 30s; no fim toca KOTAI (troca) ou MATE (parar); intervalo pode ser silencioso; “Descanso 30s” volta pro início.
+        <b>Primeira vez (em casa):</b><br>
+        1) Abra em <b>HTTPS</b> (GitHub Pages).<br>
+        2) Toque <b>Ativar áudio</b>.<br>
+        3) Toque <b>Configurar microfone</b> → <b>Permitir</b>.<br>
+        4) Grave <b>HAJIME</b> e <b>KOTAI</b> (ou <b>MATE</b>). Opcional: grave “<b>5..1</b>”.<br>
+        5) Toque <b>Iniciar</b>: fala HAJIME e começa 30s; no fim fala KOTAI (troca) ou MATE (parar).<br><br>
+
+        <b>No treino:</b><br>
+        • <b>MATE</b> para tudo imediatamente e fala “MATE”.<br>
+        • <b>Descanso 30s</b> reinicia o circuito e faz um descanso extra.<br><br>
+
+        Dica: aumente o volume de mídia do celular. Para “bem alto”, use caixinha Bluetooth.
       </p>
     </div>
   </div>
 
   <div class="wrap">
-    <h1>Timer Circuito — só minha voz (RAJIME / KOTAI / MATE)</h1>
-    <div class="mut">Se os botões não funcionarem, você não está com um HTML/JS válido. Este arquivo deve começar com <b>&lt;!doctype html&gt;</b>.</div>
+    <h1>Timer Circuito — só minha voz (HAJIME / KOTAI / MATE)</h1>
+    <div class="mut">
+      Se o site abrir e os botões “clicarem” mas não fizerem nada, normalmente é JavaScript desativado no Chrome.
+    </div>
 
     <div class="card">
       <p class="name" id="exName">Pronto</p>
@@ -73,25 +83,35 @@
         <button class="ok" id="start">Iniciar</button>
         <button id="pause">Pausar</button>
       </div>
+
       <div class="row">
         <button id="reset">Zerar</button>
         <button class="bad" id="rest30">Descanso 30s</button>
       </div>
+
       <div class="row">
         <button class="warn" id="next">Próximo</button>
         <button id="full">Tela cheia</button>
       </div>
+
       <div class="row">
+        <button class="bad" id="mateBtn">MATE</button>
         <button class="ok" id="audio">Ativar áudio</button>
+      </div>
+
+      <div class="row">
         <button class="ok" id="mic">Configurar microfone</button>
-      </div>
-      <div class="row">
         <button id="guide">Guia do usuário</button>
-        <button id="save">Salvar config</button>
       </div>
+
       <div class="row">
+        <button id="save">Salvar config</button>
         <button id="load">Carregar config</button>
+      </div>
+
+      <div class="row">
         <button class="bad" id="clearRecs">Apagar gravações</button>
+        <button id="noop"> </button>
       </div>
     </div>
 
@@ -141,8 +161,8 @@ Prancha</textarea>
     <div class="card">
       <b>Gravações (minha voz)</b>
       <div class="row">
-        <button id="recStart">🎙️ Gravar RAJIME</button>
-        <button id="testStart">▶️ Testar RAJIME</button>
+        <button id="recStart">🎙️ Gravar HAJIME</button>
+        <button id="testStart">▶️ Testar HAJIME</button>
       </div>
       <div class="row">
         <button id="recKotai">🎙️ Gravar KOTAI</button>
@@ -176,8 +196,8 @@ Prancha</textarea>
     o.connect(g).connect(ac.destination); o.start(t); o.stop(t+ms/1000+0.02);
   };
 
-  // Recording storage
-  const K={start:'r_start_v10',kotai:'r_kotai_v10',mate:'r_mate_v10',count:'r_count_v10',cfg:'cfg_v10'};
+  // Recording storage (mantém as chaves internas; só mudamos o texto para HAJIME)
+  const K={start:'r_start_v11',kotai:'r_kotai_v11',mate:'r_mate_v11',count:'r_count_v11',cfg:'cfg_v11'};
   let rec={start:null,kotai:null,mate:null,count:null,aStart:null,aKotai:null,aMate:null,aCount:null};
 
   const loadRecs=()=>{
@@ -233,9 +253,7 @@ Prancha</textarea>
       return;
     }
 
-    const stop = async()=>{
-      try{ mr.stop(); }catch(e){}
-    };
+    const stop = async()=>{ try{ mr.stop(); }catch(e){} };
 
     const old=btn.textContent;
     btn.textContent='⏹️ Parar';
@@ -278,7 +296,12 @@ Prancha</textarea>
 
   const ui=()=>{
     $('time').textContent=fmt(rem);
-    $('phase').textContent = phase==='WORK'?'Trabalho' : phase==='REST'?'Intervalo' : phase==='REST30'?'Descanso 30s' : phase==='PAUSE'?'Pausado' : 'Parado';
+    $('phase').textContent =
+      phase==='WORK' ? 'Trabalho' :
+      phase==='REST' ? 'Intervalo' :
+      phase==='REST30'? 'Descanso 30s' :
+      phase==='PAUSE'? 'Pausado' :
+      'Parado';
     $('exName').textContent=(phase==='REST30')?'DESCANSO':(list[idx]||'Pronto');
   };
 
@@ -288,7 +311,7 @@ Prancha</textarea>
 
   const canStart=()=>{
     if(!audioOn) return 'Ative o áudio primeiro.';
-    if(!rec.aStart) return 'Grave RAJIME antes de iniciar.';
+    if(!rec.aStart) return 'Grave HAJIME antes de iniciar.';
     const end=$('endCmd').value;
     if(end==='kotai' && !rec.aKotai) return 'Grave KOTAI antes de iniciar.';
     if(end==='mate' && !rec.aMate) return 'Grave MATE antes de iniciar.';
@@ -299,7 +322,7 @@ Prancha</textarea>
   const startWork=async()=>{
     seg('WORK', work());
     beep(1500,60);
-    await play('start');
+    await play('start'); // sua gravação do HAJIME
   };
 
   const endWork=async()=>{
@@ -315,7 +338,7 @@ Prancha</textarea>
     if(idx<list.length-1) idx++;
     else{
       if(round<rounds()){ round++; idx=0; }
-      else{ stopAll(); toast('Treino finalizado'); beep(880,90); return; }
+      else{ stopAll(true); toast('Treino finalizado'); beep(880,90); return; }
     }
     loadList();
     await startWork();
@@ -342,18 +365,34 @@ Prancha</textarea>
 
   const run=()=>{ stopTimer(); timer=setInterval(()=>{ tick().catch(()=>{}); },1000); };
 
-  const stopAll=()=>{
-    stopTimer(); stopClips();
-    phase='STOP'; idx=0; round=1; rem=work(); tot=rem;
-    loadList(); ui();
+  // stopAll(resetUIAfterAudio)
+  const stopAll=(hard=false)=>{
+    stopTimer();
+    stopClips();
+    phase='STOP';
+    if(hard){
+      idx=0; round=1;
+      rem=work(); tot=rem;
+      loadList();
+    }
+    ui();
   };
 
   // Buttons
   $('audio').onclick=async()=>{
-    if(audioOn){ audioOn=false; stopClips(); $('audio').textContent='Ativar áudio'; toast('Áudio desativado'); return; }
+    if(audioOn){
+      audioOn=false;
+      stopClips();
+      $('audio').textContent='Ativar áudio';
+      toast('Áudio desativado');
+      return;
+    }
     if(!ensureAC()){ toast('Áudio não suportado.'); return; }
     try{ if(ac.state==='suspended') await ac.resume(); }catch(e){}
-    audioOn=true; $('audio').textContent='Desativar áudio'; toast('Áudio ativado'); beep(880,80);
+    audioOn=true;
+    $('audio').textContent='Desativar áudio';
+    toast('Áudio ativado');
+    beep(880,80);
   };
 
   $('mic').onclick=requestMic;
@@ -368,7 +407,7 @@ Prancha</textarea>
       return;
     }
     if(phase==='PAUSE'){
-      phase='WORK'; // volta a correr
+      phase='WORK';
       run(); ui();
     }
   };
@@ -379,7 +418,7 @@ Prancha</textarea>
     phase='PAUSE'; stopTimer(); ui();
   };
 
-  $('reset').onclick=()=>{ stopAll(); toast('Zerado'); };
+  $('reset').onclick=()=>{ stopAll(true); toast('Zerado'); };
 
   $('rest30').onclick=()=>{
     loadList();
@@ -392,6 +431,21 @@ Prancha</textarea>
 
   $('full').onclick=async()=>{
     try{ if(!document.fullscreenElement) await document.documentElement.requestFullscreen(); else await document.exitFullscreen(); }catch(e){}
+  };
+
+  // BOTÃO MATE: para na hora, fala MATE, e depois volta pro início do circuito
+  $('mateBtn').onclick=async()=>{
+    if(!audioOn){ toast('Ative o áudio primeiro.'); return; }
+    if(!rec.aMate){ toast('Grave o MATE primeiro.'); return; }
+    stopTimer();
+    phase='STOP';
+    ui();
+    await play('mate');
+    // depois que falar MATE, volta para o início pronto para recomeçar
+    idx=0; round=1;
+    rem=work(); tot=rem;
+    loadList();
+    ui();
   };
 
   $('guide').onclick=()=>{ $('mb').style.display='flex'; };
@@ -437,6 +491,8 @@ Prancha</textarea>
   loadList();
   ui();
 
+  // botão vazio (só pra manter o grid bonito)
+  $('noop').onclick=()=>toast(' ');
 })();
 </script>
 </body>
