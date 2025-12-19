@@ -10,8 +10,11 @@
     .wrap{max-width:920px;margin:0 auto;padding:14px}
     .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:14px;margin:10px 0}
     h1{margin:0 0 6px;font-size:18px}
+    h2{margin:0 0 10px;font-size:15px}
     .mut{color:#b7c3ee;font-size:13px;line-height:1.35}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px}
+    @media(max-width:520px){ .row3{grid-template-columns:1fr 1fr;} }
     button{padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.18);color:#eef2ff;font-weight:800;font-size:16px}
     button:active{transform:translateY(1px)}
     .ok{background:rgba(61,220,151,.85);color:#06120d}
@@ -27,6 +30,7 @@
     .toast.on{opacity:1}
     .modalBack{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:16px;z-index:9999}
     .modal{max-width:900px;width:96vw;max-height:88vh;overflow:auto;background:#0b1020;border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:14px}
+    .divider{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
   </style>
 
   <script>
@@ -60,7 +64,7 @@
         5) Toque <b>Iniciar</b>: fala HAJIME e começa 30s; no fim fala KOTAI (troca) ou MATE (parar).<br><br>
 
         <b>No treino:</b><br>
-        • <b>MATE</b> para tudo imediatamente e fala “MATE”.<br>
+        • <b>MATE</b> para tudo imediatamente e fala “MATE” (e volta pro começo pronto pra recomeçar).<br>
         • <b>Descanso 30s</b> reinicia o circuito e faz um descanso extra.<br><br>
 
         Dica: aumente o volume de mídia do celular. Para “bem alto”, use caixinha Bluetooth.
@@ -71,37 +75,53 @@
   <div class="wrap">
     <h1>Timer Circuito — só minha voz (HAJIME / KOTAI / MATE)</h1>
     <div class="mut">
-      Se o site abrir e os botões “clicarem” mas não fizerem nada, normalmente é JavaScript desativado no Chrome.
+      Agora os botões ficam separados em: <b>Ações do treino</b> e <b>Configuração do app</b>.
     </div>
 
+    <!-- DISPLAY / STATUS -->
     <div class="card">
       <p class="name" id="exName">Pronto</p>
       <div class="big" id="time">00:30</div>
       <div class="mut" style="text-align:center" id="phase">Parado</div>
+    </div>
 
+    <!-- AÇÕES DO TREINO (somente ações) -->
+    <div class="card">
+      <h2>Ações do treino</h2>
       <div class="row">
         <button class="ok" id="start">Iniciar</button>
         <button id="pause">Pausar</button>
       </div>
 
       <div class="row">
-        <button id="reset">Zerar</button>
-        <button class="bad" id="rest30">Descanso 30s</button>
-      </div>
-
-      <div class="row">
         <button class="warn" id="next">Próximo</button>
-        <button id="full">Tela cheia</button>
+        <button id="reset">Zerar</button>
       </div>
 
       <div class="row">
+        <button class="bad" id="rest30">Descanso 30s</button>
         <button class="bad" id="mateBtn">MATE</button>
-        <button class="ok" id="audio">Ativar áudio</button>
       </div>
 
       <div class="row">
-        <button class="ok" id="mic">Configurar microfone</button>
+        <button id="full">Tela cheia</button>
         <button id="guide">Guia do usuário</button>
+      </div>
+
+      <div class="mut" style="margin-top:10px">
+        • <b>Iniciar</b> fala HAJIME e começa o tempo.<br>
+        • <b>MATE</b> para imediatamente e fala “MATE”.<br>
+        • <b>Descanso 30s</b> reinicia do começo com um descanso extra.
+      </div>
+    </div>
+
+    <!-- CONFIGURAÇÃO DO APP (somente configuração) -->
+    <div class="card">
+      <h2>Configuração do app</h2>
+
+      <div class="row">
+        <button class="ok" id="audio">Ativar áudio</button>
+        <button class="ok" id="mic">Configurar microfone</button>
       </div>
 
       <div class="row">
@@ -111,12 +131,17 @@
 
       <div class="row">
         <button class="bad" id="clearRecs">Apagar gravações</button>
-        <button id="noop"> </button>
+        <button id="noop" style="visibility:hidden">x</button>
+      </div>
+
+      <div class="mut" style="margin-top:10px">
+        Se a gravação der “permissão negada”: Android → Configurações → Apps → Chrome → Permissões → <b>Microfone</b> → Permitir.
       </div>
     </div>
 
+    <!-- CONFIGURAÇÕES DO TREINO -->
     <div class="card">
-      <b>Configurações</b>
+      <h2>Configurações do treino</h2>
 
       <label>Trabalho (segundos)
         <input id="work" type="number" min="5" max="600" value="30">
@@ -158,26 +183,33 @@ Prancha</textarea>
       </label>
     </div>
 
+    <!-- GRAVAÇÕES -->
     <div class="card">
-      <b>Gravações (minha voz)</b>
+      <h2>Gravações (minha voz)</h2>
+
       <div class="row">
         <button id="recStart">🎙️ Gravar HAJIME</button>
         <button id="testStart">▶️ Testar HAJIME</button>
       </div>
+
       <div class="row">
         <button id="recKotai">🎙️ Gravar KOTAI</button>
         <button id="testKotai">▶️ Testar KOTAI</button>
       </div>
+
       <div class="row">
         <button id="recMate">🎙️ Gravar MATE</button>
         <button id="testMate">▶️ Testar MATE</button>
       </div>
+
       <div class="row">
         <button id="recCount">🎙️ Gravar “5..1”</button>
         <button id="testCount">▶️ Testar “5..1”</button>
       </div>
+
       <div class="mut">Obs.: para gravar, precisa permitir microfone no Chrome/Android.</div>
     </div>
+
   </div>
 
 <script>
@@ -185,7 +217,7 @@ Prancha</textarea>
   const $ = (id)=>document.getElementById(id);
   const toast=(m)=>{ const t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(toast._); toast._=setTimeout(()=>t.classList.remove('on'),1800); };
 
-  // APP ATIVO (se você ver isso, JS está rodando)
+  // APP ATIVO
   $('badge').textContent = '✅ APP ATIVO';
 
   // AudioContext (fallback beep)
@@ -196,8 +228,8 @@ Prancha</textarea>
     o.connect(g).connect(ac.destination); o.start(t); o.stop(t+ms/1000+0.02);
   };
 
-  // Recording storage (mantém as chaves internas; só mudamos o texto para HAJIME)
-  const K={start:'r_start_v11',kotai:'r_kotai_v11',mate:'r_mate_v11',count:'r_count_v11',cfg:'cfg_v11'};
+  // Storage
+  const K={start:'r_start_v12',kotai:'r_kotai_v12',mate:'r_mate_v12',count:'r_count_v12',cfg:'cfg_v12'};
   let rec={start:null,kotai:null,mate:null,count:null,aStart:null,aKotai:null,aMate:null,aCount:null};
 
   const loadRecs=()=>{
@@ -365,7 +397,6 @@ Prancha</textarea>
 
   const run=()=>{ stopTimer(); timer=setInterval(()=>{ tick().catch(()=>{}); },1000); };
 
-  // stopAll(resetUIAfterAudio)
   const stopAll=(hard=false)=>{
     stopTimer();
     stopClips();
@@ -378,25 +409,7 @@ Prancha</textarea>
     ui();
   };
 
-  // Buttons
-  $('audio').onclick=async()=>{
-    if(audioOn){
-      audioOn=false;
-      stopClips();
-      $('audio').textContent='Ativar áudio';
-      toast('Áudio desativado');
-      return;
-    }
-    if(!ensureAC()){ toast('Áudio não suportado.'); return; }
-    try{ if(ac.state==='suspended') await ac.resume(); }catch(e){}
-    audioOn=true;
-    $('audio').textContent='Desativar áudio';
-    toast('Áudio ativado');
-    beep(880,80);
-  };
-
-  $('mic').onclick=requestMic;
-
+  // Botões (AÇÕES)
   $('start').onclick=async()=>{
     loadList();
     if(phase==='STOP'){
@@ -433,7 +446,6 @@ Prancha</textarea>
     try{ if(!document.fullscreenElement) await document.documentElement.requestFullscreen(); else await document.exitFullscreen(); }catch(e){}
   };
 
-  // BOTÃO MATE: para na hora, fala MATE, e depois volta pro início do circuito
   $('mateBtn').onclick=async()=>{
     if(!audioOn){ toast('Ative o áudio primeiro.'); return; }
     if(!rec.aMate){ toast('Grave o MATE primeiro.'); return; }
@@ -441,12 +453,30 @@ Prancha</textarea>
     phase='STOP';
     ui();
     await play('mate');
-    // depois que falar MATE, volta para o início pronto para recomeçar
     idx=0; round=1;
     rem=work(); tot=rem;
     loadList();
     ui();
   };
+
+  // Botões (CONFIG APP)
+  $('audio').onclick=async()=>{
+    if(audioOn){
+      audioOn=false;
+      stopClips();
+      $('audio').textContent='Ativar áudio';
+      toast('Áudio desativado');
+      return;
+    }
+    if(!ensureAC()){ toast('Áudio não suportado.'); return; }
+    try{ if(ac.state==='suspended') await ac.resume(); }catch(e){}
+    audioOn=true;
+    $('audio').textContent='Desativar áudio';
+    toast('Áudio ativado');
+    beep(880,80);
+  };
+
+  $('mic').onclick=requestMic;
 
   $('guide').onclick=()=>{ $('mb').style.display='flex'; };
   $('closeGuide').onclick=()=>{ $('mb').style.display='none'; };
@@ -473,9 +503,11 @@ Prancha</textarea>
 
   $('clearRecs').onclick=()=>{
     [K.start,K.kotai,K.mate,K.count].forEach(k=>localStorage.removeItem(k));
-    loadRecs(); toast('Gravações apagadas');
+    loadRecs();
+    toast('Gravações apagadas');
   };
 
+  // Gravações
   $('recStart').onclick=()=>record('start',$('recStart'));
   $('recKotai').onclick=()=>record('kotai',$('recKotai'));
   $('recMate').onclick=()=>record('mate',$('recMate'));
@@ -491,8 +523,8 @@ Prancha</textarea>
   loadList();
   ui();
 
-  // botão vazio (só pra manter o grid bonito)
-  $('noop').onclick=()=>toast(' ');
+  // noop
+  $('noop').onclick=()=>{};
 })();
 </script>
 </body>
